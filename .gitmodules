@@ -1,0 +1,3 @@
+[submodule "open_nsfw"]
+	path = open_nsfw
+	url = git@github.com:yahoo/open_nsfw.git

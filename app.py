@@ -82,51 +82,6 @@ def caffe_preprocess_and_compute(pimg, caffe_transformer=None, caffe_net=None,
     else:
         return []
 
-
-def main(argv):
-    pycaffe_dir = os.path.dirname(__file__)
-
-    parser = argparse.ArgumentParser()
-    # Required arguments: input file.
-    parser.add_argument(
-        "input_file",
-        help="Path to the input image file"
-    )
-
-    # Optional arguments.
-    parser.add_argument(
-        "--model_def",
-        help="Model definition file."
-    )
-    parser.add_argument(
-        "--pretrained_model",
-        help="Trained model weights file."
-    )
-
-    args = parser.parse_args()
-    image_data = open(args.input_file).read()
-    #response = urllib2.urlopen('https://image.kusokora.jp/v1/b7daff98c2b748dfa6cb8240c8ac7c33/kusokora/image-PI3KQm-1728.png')
-    #image_data = response.read()
-
-    # Pre-load caffe model.
-    nsfw_net = caffe.Net(args.model_def,  # pylint: disable=invalid-name
-        args.pretrained_model, caffe.TEST)
-
-    # Load transformer
-    # Note that the parameters are hard-coded for best results
-    caffe_transformer = caffe.io.Transformer({'data': nsfw_net.blobs['data'].data.shape})
-    caffe_transformer.set_transpose('data', (2, 0, 1))  # move image channels to outermost
-    caffe_transformer.set_mean('data', np.array([104, 117, 123]))  # subtract the dataset-mean value in each channel
-    caffe_transformer.set_raw_scale('data', 255)  # rescale from [0, 1] to [0, 255]
-    caffe_transformer.set_channel_swap('data', (2, 1, 0))  # swap channels from RGB to BGR
-
-    # Classify.
-    scores = caffe_preprocess_and_compute(image_data, caffe_transformer=caffe_transformer, caffe_net=nsfw_net, output_layers=['prob'])
-
-    # Scores is the array containing SFW / NSFW image probabilities
-    # scores[1] indicates the NSFW probability
-    print "NSFW score:  " , scores[1]
-
 pycaffe_dir = os.path.dirname(__file__)
 
 model_def = 'open_nsfw/nsfw_model/deploy.prototxt'
